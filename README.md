@@ -17,11 +17,11 @@ Creations are exported as plain text:
 
 ```text
 INVADER1
-size:20x20
+size:13x13
 name:Untitled
 data:
-00000000000000000000
-00000000000000000000
+0000000000000
+0000000000000
 ```
 
 The first line identifies the format, the second line declares the square grid

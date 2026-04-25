@@ -197,7 +197,7 @@ input[type="text"] {
   bottom: 0;
   left: 50%;
   display: none;
-  border-left: 1px dashed rgba(17, 17, 17, 0.2);
+  border-left: 2px dashed rgba(17, 17, 17, 0.2);
   content: "";
   pointer-events: none;
 }
@@ -227,6 +227,8 @@ input[type="text"] {
 }
 
 .board.mirror-on .mirror-center-column {
+  border-right-width: 2px;
+  border-left-width: 2px;
   border-right-style: dashed;
   border-left-style: dashed;
 }

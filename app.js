@@ -1,4 +1,4 @@
-const DEFAULT_SIZE = 20;
+const DEFAULT_SIZE = 13;
 const FORMAT_NAME = "INVADER1";
 const STORAGE_KEY = "invader-gen-creations";
 
