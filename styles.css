@@ -109,10 +109,16 @@ label,
 }
 
 .actions,
-.import-row {
+.import-row,
+.save-row,
+.tool-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.tool-actions {
+  flex-direction: column;
 }
 
 .editor {
@@ -163,12 +169,39 @@ input[type="number"] {
 
 input[type="text"] {
   min-height: 2.4rem;
-  width: min(14rem, 100%);
+  width: min(16rem, 100%);
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0 0.65rem;
   color: var(--ink);
   background: #ffffff;
+}
+
+.toggle-button {
+  justify-content: center;
+  min-height: 2.4rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 0.9rem;
+  color: var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+}
+
+.toggle-button:hover {
+  border-color: var(--accent);
+}
+
+.toggle-button input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle-button:has(input:checked) {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  background: var(--accent);
 }
 
 .board-wrap {
@@ -250,6 +283,7 @@ input[type="text"] {
 
 .gallery-section {
   flex: 1 1 auto;
+  gap: 0.75rem;
 }
 
 .text-section {
@@ -373,7 +407,8 @@ textarea {
   }
 
   .actions,
-  .import-row {
+  .import-row,
+  .save-row {
     display: grid;
     grid-template-columns: 1fr;
   }

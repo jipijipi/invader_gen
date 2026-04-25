@@ -15,11 +15,7 @@
             <p>13 x 13 one-bit pixel editor</p>
           </div>
           <div class="actions" aria-label="Editor actions">
-            <input id="nameInput" type="text" maxlength="60" value="Untitled" aria-label="Creation name">
-            <button id="saveButton" type="button">Save</button>
             <button id="clearButton" type="button">Clear</button>
-            <button id="invertButton" type="button">Invert</button>
-            <button id="copyButton" type="button">Copy Text</button>
           </div>
         </header>
 
@@ -39,11 +35,15 @@
                 <input type="radio" name="tool" value="toggle">
                 Toggle
               </label>
-              <label>
-                <input id="mirrorInput" type="checkbox">
-                Mirror
-              </label>
             </fieldset>
+
+            <div class="tool-actions" aria-label="Canvas actions">
+              <label class="toggle-button">
+                <input id="mirrorInput" type="checkbox">
+                <span>Mirror</span>
+              </label>
+              <button id="invertButton" type="button">Invert</button>
+            </div>
 
             <fieldset>
               <legend>Canvas</legend>
@@ -65,6 +65,10 @@
             <h2>Gallery</h2>
             <span id="galleryCount"></span>
           </div>
+          <div class="save-row">
+            <input id="nameInput" type="text" maxlength="60" value="Untitled" aria-label="Creation name">
+            <button id="saveButton" type="button">Save</button>
+          </div>
           <div id="gallery" class="gallery"></div>
         </section>
 
@@ -75,6 +79,7 @@
           </div>
           <textarea id="exportText" spellcheck="false" aria-label="Exported pixel data"></textarea>
           <div class="import-row">
+            <button id="copyButton" type="button">Copy Text</button>
             <button id="importButton" type="button">Import Text</button>
             <button id="downloadButton" type="button">Download .invader</button>
           </div>
