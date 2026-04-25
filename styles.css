@@ -161,6 +161,16 @@ input[type="number"] {
   background: #ffffff;
 }
 
+input[type="text"] {
+  min-height: 2.4rem;
+  width: min(14rem, 100%);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 0.65rem;
+  color: var(--ink);
+  background: #ffffff;
+}
+
 .board-wrap {
   display: grid;
   place-items: center;
@@ -200,12 +210,46 @@ input[type="number"] {
   background: var(--ink);
 }
 
+.mirror-left {
+  border-right: 2px dashed #6f6b61;
+}
+
+.mirror-right {
+  border-left: 2px dashed #6f6b61;
+}
+
+.mirror-center {
+  background-image: linear-gradient(
+    90deg,
+    transparent calc(50% - 1px),
+    rgba(111, 107, 97, 0.8) calc(50% - 1px),
+    rgba(111, 107, 97, 0.8) calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
+}
+
 .export-panel {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   min-width: 0;
   padding: 1rem;
+}
+
+.gallery-section,
+.text-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.gallery-section {
+  flex: 1 1 auto;
+}
+
+.text-section {
+  flex: 0 0 42%;
+  gap: 0.75rem;
 }
 
 .panel-heading {
@@ -217,7 +261,7 @@ input[type="number"] {
 
 textarea {
   flex: 1;
-  min-height: 24rem;
+  min-height: 10rem;
   width: 100%;
   resize: none;
   border: 1px solid var(--line);
@@ -228,6 +272,66 @@ textarea {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 0.85rem;
   line-height: 1.45;
+}
+
+.gallery {
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+  min-height: 10rem;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.gallery-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.gallery-load {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.45rem;
+  text-align: left;
+}
+
+.gallery-load span:last-child {
+  overflow: hidden;
+  color: var(--ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thumbnail {
+  display: grid;
+  width: 3rem;
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.thumbnail span {
+  min-width: 0;
+  min-height: 0;
+}
+
+.thumbnail .is-on {
+  background: var(--ink);
+}
+
+.delete-button {
+  padding: 0 0.65rem;
+}
+
+.empty-gallery {
+  padding: 0.75rem;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
 }
 
 @media (max-width: 860px) {
@@ -249,7 +353,7 @@ textarea {
   }
 
   textarea {
-    min-height: 15rem;
+    min-height: 12rem;
   }
 }
 

@@ -1,10 +1,12 @@
 const DEFAULT_SIZE = 20;
 const FORMAT_NAME = "INVADER1";
+const STORAGE_KEY = "invader-gen-creations";
 
 const board = document.querySelector("#board");
 const exportText = document.querySelector("#exportText");
 const status = document.querySelector("#status");
 const sizeInput = document.querySelector("#sizeInput");
+const nameInput = document.querySelector("#nameInput");
 const clearButton = document.querySelector("#clearButton");
 const invertButton = document.querySelector("#invertButton");
 const copyButton = document.querySelector("#copyButton");
@@ -12,12 +14,16 @@ const importButton = document.querySelector("#importButton");
 const downloadButton = document.querySelector("#downloadButton");
 const resizeButton = document.querySelector("#resizeButton");
 const mirrorInput = document.querySelector("#mirrorInput");
+const saveButton = document.querySelector("#saveButton");
+const gallery = document.querySelector("#gallery");
+const galleryCount = document.querySelector("#galleryCount");
 
 let size = DEFAULT_SIZE;
 let pixels = createGrid(size);
 let isDrawing = false;
 let dragValue = 1;
 let lastTouchedIndex = -1;
+let activeCreationId = null;
 
 function createGrid(nextSize) {
   return Array.from({ length: nextSize }, () => Array(nextSize).fill(0));
@@ -29,6 +35,10 @@ function getTool() {
 
 function isMirrorEnabled() {
   return mirrorInput.checked;
+}
+
+function getCreationName() {
+  return nameInput.value.trim() || "Untitled";
 }
 
 function setStatus(message) {
@@ -51,6 +61,15 @@ function renderBoard() {
       cell.className = "cell";
       cell.dataset.row = String(row);
       cell.dataset.col = String(col);
+      if (size % 2 === 0 && col === size / 2 - 1) {
+        cell.classList.add("mirror-left");
+      }
+      if (size % 2 === 0 && col === size / 2) {
+        cell.classList.add("mirror-right");
+      }
+      if (size % 2 === 1 && col === Math.floor(size / 2)) {
+        cell.classList.add("mirror-center");
+      }
       cell.setAttribute("role", "gridcell");
       cell.setAttribute("aria-label", `Pixel ${col + 1}, ${row + 1}`);
       board.append(cell);
@@ -76,6 +95,7 @@ function syncExport() {
   exportText.value = [
     FORMAT_NAME,
     `size:${size}x${size}`,
+    `name:${getCreationName()}`,
     "data:",
     ...rows,
   ].join("\n");
@@ -131,6 +151,8 @@ function parseExport(text) {
   }
 
   const nextSize = Number(match[1]);
+  const nameLine = lines.find((line) => line.startsWith("name:"));
+  const nextName = nameLine?.slice(5).trim() || "Imported";
   const dataStart = lines.indexOf("data:");
   const rows = lines.slice(dataStart + 1);
 
@@ -143,18 +165,146 @@ function parseExport(text) {
   }
 
   return {
+    nextName,
     nextSize,
     nextPixels: rows.map((row) => [...row].map(Number)),
   };
 }
 
+function getSavedCreations() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function setSavedCreations(creations) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(creations));
+}
+
+function createId() {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `creation-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function createStorageSnapshot(id = createId()) {
+  return {
+    id,
+    name: getCreationName(),
+    size,
+    pixels,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function loadCreation(creation) {
+  activeCreationId = creation.id;
+  nameInput.value = creation.name || "Untitled";
+  size = creation.size;
+  pixels = creation.pixels.map((row) => [...row]);
+  sizeInput.value = String(size);
+  renderBoard();
+  setStatus("Loaded");
+}
+
+function deleteCreation(id) {
+  const creations = getSavedCreations().filter((creation) => creation.id !== id);
+  setSavedCreations(creations);
+  if (activeCreationId === id) {
+    activeCreationId = null;
+  }
+  renderGallery();
+  setStatus("Deleted");
+}
+
+function createThumbnail(creation) {
+  const thumbnail = document.createElement("div");
+  thumbnail.className = "thumbnail";
+  thumbnail.style.gridTemplateColumns = `repeat(${creation.size}, 1fr)`;
+  thumbnail.setAttribute("aria-hidden", "true");
+
+  for (const row of creation.pixels) {
+    for (const value of row) {
+      const pixel = document.createElement("span");
+      pixel.className = value ? "is-on" : "";
+      thumbnail.append(pixel);
+    }
+  }
+
+  return thumbnail;
+}
+
+function renderGallery() {
+  const creations = getSavedCreations().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  gallery.replaceChildren();
+  galleryCount.textContent = creations.length ? `${creations.length} saved` : "Empty";
+
+  if (creations.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-gallery";
+    empty.textContent = "Saved creations appear here.";
+    gallery.append(empty);
+    return;
+  }
+
+  for (const creation of creations) {
+    const item = document.createElement("article");
+    item.className = "gallery-item";
+
+    const loadButton = document.createElement("button");
+    loadButton.type = "button";
+    loadButton.className = "gallery-load";
+    loadButton.append(createThumbnail(creation));
+
+    const label = document.createElement("span");
+    label.textContent = creation.name || "Untitled";
+    loadButton.append(label);
+    loadButton.addEventListener("click", () => loadCreation(creation));
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "delete-button";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => deleteCreation(creation.id));
+
+    item.append(loadButton, deleteButton);
+    gallery.append(item);
+  }
+}
+
+function saveCurrentCreation() {
+  const creations = getSavedCreations();
+  const existingIndex = creations.findIndex((creation) => creation.id === activeCreationId);
+  const snapshot = createStorageSnapshot(activeCreationId || undefined);
+
+  if (existingIndex >= 0) {
+    creations[existingIndex] = snapshot;
+  } else {
+    activeCreationId = snapshot.id;
+    creations.push(snapshot);
+  }
+
+  setSavedCreations(creations);
+  renderGallery();
+  setStatus("Saved");
+}
+
 function createExportFilename() {
+  const name = getCreationName()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "untitled";
   const timestamp = new Date()
     .toISOString()
     .replaceAll(":", "")
     .replace(/\.\d{3}Z$/, "Z");
 
-  return `invader-${size}x${size}-${timestamp}.invader`;
+  return `${name}-${size}x${size}-${timestamp}.invader`;
 }
 
 board.addEventListener("pointerdown", (event) => {
@@ -194,6 +344,7 @@ board.addEventListener("pointercancel", () => {
 
 clearButton.addEventListener("click", () => {
   pixels = createGrid(size);
+  activeCreationId = null;
   syncCells();
 });
 
@@ -216,6 +367,8 @@ copyButton.addEventListener("click", async () => {
 importButton.addEventListener("click", () => {
   try {
     const parsed = parseExport(exportText.value);
+    activeCreationId = null;
+    nameInput.value = parsed.nextName;
     size = parsed.nextSize;
     pixels = parsed.nextPixels;
     sizeInput.value = String(size);
@@ -256,7 +409,12 @@ resizeButton.addEventListener("click", () => {
 
   size = nextSize;
   pixels = nextPixels;
+  activeCreationId = null;
   renderBoard();
 });
 
+nameInput.addEventListener("input", syncExport);
+saveButton.addEventListener("click", saveCurrentCreation);
+
 renderBoard();
+renderGallery();

@@ -15,6 +15,8 @@
             <p>20 x 20 one-bit pixel editor</p>
           </div>
           <div class="actions" aria-label="Editor actions">
+            <input id="nameInput" type="text" maxlength="60" value="Untitled" aria-label="Creation name">
+            <button id="saveButton" type="button">Save</button>
             <button id="clearButton" type="button">Clear</button>
             <button id="invertButton" type="button">Invert</button>
             <button id="copyButton" type="button">Copy Text</button>
@@ -58,15 +60,25 @@
       </section>
 
       <aside class="export-panel" aria-label="Text export">
-        <div class="panel-heading">
-          <h2>Text Export</h2>
-          <span id="status" role="status" aria-live="polite"></span>
-        </div>
-        <textarea id="exportText" spellcheck="false" aria-label="Exported pixel data"></textarea>
-        <div class="import-row">
-          <button id="importButton" type="button">Import Text</button>
-          <button id="downloadButton" type="button">Download .invader</button>
-        </div>
+        <section class="gallery-section" aria-label="Saved creations">
+          <div class="panel-heading">
+            <h2>Gallery</h2>
+            <span id="galleryCount"></span>
+          </div>
+          <div id="gallery" class="gallery"></div>
+        </section>
+
+        <section class="text-section" aria-label="Text import and export">
+          <div class="panel-heading">
+            <h2>Text Export</h2>
+            <span id="status" role="status" aria-live="polite"></span>
+          </div>
+          <textarea id="exportText" spellcheck="false" aria-label="Exported pixel data"></textarea>
+          <div class="import-row">
+            <button id="importButton" type="button">Import Text</button>
+            <button id="downloadButton" type="button">Download .invader</button>
+          </div>
+        </section>
       </aside>
     </main>
 
