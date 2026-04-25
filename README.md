@@ -8,8 +8,10 @@ Open `index.html` in a browser to use it.
 
 Use the name field in the toolbar to name the current creation. `Save` stores it
 in browser local storage, and saved creations appear in the gallery beside the
-editor. Click a gallery item to load it, or use `Delete` to remove it from local
-storage.
+editor. Saving repeatedly while working on a new creation overwrites that same
+gallery item. Loading from the gallery creates a fresh working copy, so saving it
+again creates a new gallery item for variations. Use `Delete` to remove saved
+items from local storage.
 
 ## Export format
 

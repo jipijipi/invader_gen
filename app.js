@@ -208,7 +208,7 @@ function createStorageSnapshot(id = createId()) {
 }
 
 function loadCreation(creation) {
-  activeCreationId = creation.id;
+  activeCreationId = null;
   nameInput.value = creation.name || "Untitled";
   size = creation.size;
   pixels = creation.pixels.map((row) => [...row]);
