@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invader Gen</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app">
+      <section class="workspace" aria-label="Pixel editor">
+        <header class="topbar">
+          <div>
+            <h1>Invader Gen</h1>
+            <p>20 x 20 one-bit pixel editor</p>
+          </div>
+          <div class="actions" aria-label="Editor actions">
+            <button id="clearButton" type="button">Clear</button>
+            <button id="invertButton" type="button">Invert</button>
+            <button id="copyButton" type="button">Copy Text</button>
+          </div>
+        </header>
+
+        <div class="editor">
+          <div class="toolbox" aria-label="Drawing tools">
+            <fieldset>
+              <legend>Tool</legend>
+              <label>
+                <input type="radio" name="tool" value="draw" checked>
+                Draw
+              </label>
+              <label>
+                <input type="radio" name="tool" value="erase">
+                Erase
+              </label>
+              <label>
+                <input type="radio" name="tool" value="toggle">
+                Toggle
+              </label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Canvas</legend>
+              <label for="sizeInput">Size</label>
+              <input id="sizeInput" type="number" min="2" max="64" value="20">
+              <button id="resizeButton" type="button">Resize</button>
+            </fieldset>
+          </div>
+
+          <div class="board-wrap">
+            <div id="board" class="board" role="grid" aria-label="Drawing canvas"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="export-panel" aria-label="Text export">
+        <div class="panel-heading">
+          <h2>Text Export</h2>
+          <span id="status" role="status" aria-live="polite"></span>
+        </div>
+        <textarea id="exportText" spellcheck="false" aria-label="Exported pixel data"></textarea>
+        <div class="import-row">
+          <button id="importButton" type="button">Import Text</button>
+          <button id="downloadButton" type="button">Download .invader</button>
+        </div>
+      </aside>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

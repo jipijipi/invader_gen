@@ -1,0 +1,275 @@
+:root {
+  color-scheme: light;
+  --bg: #f6f4ef;
+  --ink: #111111;
+  --muted: #62615d;
+  --line: #d8d3c8;
+  --paper: #fffdf8;
+  --accent: #1b6f69;
+  --accent-ink: #ffffff;
+  --cell: #faf8f1;
+  --cell-hover: #e8f0ee;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: 2.4rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 0.9rem;
+  color: var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(27, 111, 105, 0.28);
+  outline-offset: 2px;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
+  gap: 1.25rem;
+  width: min(92rem, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.workspace,
+.export-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+p,
+legend,
+label,
+#status {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.actions,
+.import-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.editor {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+  padding: 1rem;
+}
+
+.toolbox {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+fieldset {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem;
+}
+
+legend {
+  padding: 0 0.25rem;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+input[type="number"] {
+  width: 100%;
+  min-height: 2.35rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 0.65rem;
+  color: var(--ink);
+  background: #ffffff;
+}
+
+.board-wrap {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.board {
+  display: grid;
+  width: min(70vh, 100%);
+  max-width: 44rem;
+  aspect-ratio: 1;
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  touch-action: none;
+  user-select: none;
+}
+
+.cell {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(17, 17, 17, 0.2);
+  border-radius: 0;
+  padding: 0;
+  background: var(--cell);
+  cursor: crosshair;
+}
+
+.cell:hover {
+  background: var(--cell-hover);
+}
+
+.cell.is-on,
+.cell.is-on:hover {
+  background: var(--ink);
+}
+
+.export-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+textarea {
+  flex: 1;
+  min-height: 24rem;
+  width: 100%;
+  resize: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem;
+  color: var(--ink);
+  background: #ffffff;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .editor {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbox {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .board {
+    width: min(86vw, 38rem);
+  }
+
+  textarea {
+    min-height: 15rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .app {
+    padding: 0.75rem;
+  }
+
+  .topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .actions,
+  .import-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .toolbox {
+    grid-template-columns: 1fr;
+  }
+}
