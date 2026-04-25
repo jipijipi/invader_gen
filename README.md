@@ -34,3 +34,9 @@ paste into source code, and simple to parse in any language.
 To import, paste compatible `INVADER1` text into Text Export and press
 `Import Text`. Imported creations are loaded into the editor but are not stored
 in the gallery until you press `Save`.
+
+## Image export
+
+Use `Download PNG` for a scaled raster export with 32px cells. Use
+`Download SVG` for a crisp vector export. Both are one-way image exports; keep
+`.invader` text for editable source files.

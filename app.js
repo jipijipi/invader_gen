@@ -12,6 +12,8 @@ const invertButton = document.querySelector("#invertButton");
 const copyButton = document.querySelector("#copyButton");
 const importButton = document.querySelector("#importButton");
 const downloadButton = document.querySelector("#downloadButton");
+const pngButton = document.querySelector("#pngButton");
+const svgButton = document.querySelector("#svgButton");
 const resizeButton = document.querySelector("#resizeButton");
 const mirrorInput = document.querySelector("#mirrorInput");
 const saveButton = document.querySelector("#saveButton");
@@ -316,7 +318,7 @@ function saveCurrentCreation() {
   setStatus("Saved");
 }
 
-function createExportFilename() {
+function getFilenameBase() {
   const name = getCreationName()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -326,7 +328,86 @@ function createExportFilename() {
     .replaceAll(":", "")
     .replace(/\.\d{3}Z$/, "Z");
 
-  return `${name}-${cols}x${rows}-${timestamp}.invader`;
+  return `${name}-${cols}x${rows}-${timestamp}`;
+}
+
+function createExportFilename(extension) {
+  return `${getFilenameBase()}.${extension}`;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportPng() {
+  const cellSize = 32;
+  const canvas = document.createElement("canvas");
+  canvas.width = cols * cellSize;
+  canvas.height = rows * cellSize;
+
+  const context = canvas.getContext("2d");
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "#111111";
+
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      if (pixels[row][col] === 1) {
+        context.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+      }
+    }
+  }
+
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      setStatus("PNG export failed");
+      return;
+    }
+
+    downloadBlob(blob, createExportFilename("png"));
+    setStatus("PNG downloaded");
+  }, "image/png");
+}
+
+function escapeSvgText(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function createSvgMarkup() {
+  const rects = [];
+
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      if (pixels[row][col] === 1) {
+        rects.push(`<rect x="${col}" y="${row}" width="1" height="1"/>`);
+      }
+    }
+  }
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cols} ${rows}" shape-rendering="crispEdges">`,
+    `<title>${escapeSvgText(getCreationName())}</title>`,
+    `<rect width="${cols}" height="${rows}" fill="#fff"/>`,
+    `<g fill="#111">`,
+    ...rects,
+    "</g>",
+    "</svg>",
+  ].join("\n");
+}
+
+function exportSvg() {
+  const blob = new Blob([createSvgMarkup()], { type: "image/svg+xml" });
+  downloadBlob(blob, createExportFilename("svg"));
+  setStatus("SVG downloaded");
 }
 
 function addEdge(edge) {
@@ -486,13 +567,11 @@ importButton.addEventListener("click", () => {
 
 downloadButton.addEventListener("click", () => {
   const blob = new Blob([exportText.value], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = createExportFilename();
-  link.click();
-  URL.revokeObjectURL(url);
+  downloadBlob(blob, createExportFilename("invader"));
 });
+
+pngButton.addEventListener("click", exportPng);
+svgButton.addEventListener("click", exportSvg);
 
 resizeButton.addEventListener("click", () => {
   const nextSize = Number(sizeInput.value);
