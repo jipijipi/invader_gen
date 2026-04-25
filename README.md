@@ -26,10 +26,10 @@ data:
 0000000000000
 ```
 
-The first line identifies the format, the second line declares the square grid
-size, the optional `name:` line names the piece, and each data row is a `0`/`1`
-bitmap row. This stays compact, diffable, easy to paste into source code, and
-simple to parse in any language.
+The first line identifies the format, the second line declares the grid
+dimensions as `columns x rows`, the optional `name:` line names the piece, and
+each data row is a `0`/`1` bitmap row. This stays compact, diffable, easy to
+paste into source code, and simple to parse in any language.
 
 To import, paste compatible `INVADER1` text into Text Export and press
 `Import Text`. Imported creations are loaded into the editor but are not stored

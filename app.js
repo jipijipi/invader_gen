@@ -17,16 +17,18 @@ const mirrorInput = document.querySelector("#mirrorInput");
 const saveButton = document.querySelector("#saveButton");
 const gallery = document.querySelector("#gallery");
 const galleryCount = document.querySelector("#galleryCount");
+const edgeAddButtons = document.querySelectorAll("[data-add-edge]");
 
-let size = DEFAULT_SIZE;
-let pixels = createGrid(size);
+let rows = DEFAULT_SIZE;
+let cols = DEFAULT_SIZE;
+let pixels = createGrid(rows, cols);
 let isDrawing = false;
 let dragValue = 1;
 let lastTouchedIndex = -1;
 let activeCreationId = null;
 
-function createGrid(nextSize) {
-  return Array.from({ length: nextSize }, () => Array(nextSize).fill(0));
+function createGrid(rowCount, colCount) {
+  return Array.from({ length: rowCount }, () => Array(colCount).fill(0));
 }
 
 function getTool() {
@@ -44,7 +46,7 @@ function isMirrorEnabled() {
 
 function syncMirrorLine() {
   board.classList.toggle("mirror-on", isMirrorEnabled());
-  board.classList.toggle("even-size", size % 2 === 0);
+  board.classList.toggle("even-size", cols % 2 === 0);
 }
 
 function getCreationName() {
@@ -61,17 +63,18 @@ function setStatus(message) {
 
 function renderBoard() {
   board.replaceChildren();
-  board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
-  board.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+  board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+  board.style.aspectRatio = `${cols} / ${rows}`;
 
-  for (let row = 0; row < size; row += 1) {
-    for (let col = 0; col < size; col += 1) {
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
       const cell = document.createElement("button");
       cell.type = "button";
       cell.className = "cell";
       cell.dataset.row = String(row);
       cell.dataset.col = String(col);
-      if (size % 2 === 1 && col === Math.floor(size / 2)) {
+      if (cols % 2 === 1 && col === Math.floor(cols / 2)) {
         cell.classList.add("mirror-center-column");
       }
       cell.setAttribute("role", "gridcell");
@@ -96,13 +99,13 @@ function syncCells() {
 }
 
 function syncExport() {
-  const rows = pixels.map((row) => row.join(""));
+  const dataRows = pixels.map((row) => row.join(""));
   exportText.value = [
     FORMAT_NAME,
-    `size:${size}x${size}`,
+    `size:${cols}x${rows}`,
     `name:${getCreationName()}`,
     "data:",
-    ...rows,
+    ...dataRows,
   ].join("\n");
 }
 
@@ -113,7 +116,7 @@ function paintCell(cell, mode = getTool()) {
 
   const row = Number(cell.dataset.row);
   const col = Number(cell.dataset.col);
-  const index = row * size + col;
+  const index = row * cols + col;
 
   if (isDrawing && index === lastTouchedIndex) {
     return;
@@ -123,7 +126,7 @@ function paintCell(cell, mode = getTool()) {
   pixels[row][col] = nextValue;
 
   if (isMirrorEnabled()) {
-    pixels[row][size - col - 1] = nextValue;
+    pixels[row][cols - col - 1] = nextValue;
   }
 
   lastTouchedIndex = index;
@@ -150,28 +153,37 @@ function parseExport(text) {
     throw new Error("Missing INVADER1 header.");
   }
 
-  const match = lines[1].match(/^size:(\d+)x\1$/);
+  const match = lines[1].match(/^size:(\d+)x(\d+)$/);
   if (!match) {
-    throw new Error("Size must be square, for example size:20x20.");
+    throw new Error("Size must use columns x rows, for example size:13x13.");
   }
 
-  const nextSize = Number(match[1]);
+  const nextCols = Number(match[1]);
+  const nextRows = Number(match[2]);
   const nameLine = lines.find((line) => line.startsWith("name:"));
   const nextName = nameLine?.slice(5).trim() || "Imported";
   const dataStart = lines.indexOf("data:");
   const rows = lines.slice(dataStart + 1);
 
-  if (nextSize < 2 || nextSize > 64 || dataStart === -1 || rows.length !== nextSize) {
+  if (
+    nextCols < 2 ||
+    nextCols > 64 ||
+    nextRows < 2 ||
+    nextRows > 64 ||
+    dataStart === -1 ||
+    rows.length !== nextRows
+  ) {
     throw new Error("Data dimensions do not match the declared size.");
   }
 
-  if (!rows.every((row) => row.length === nextSize && /^[01]+$/.test(row))) {
+  if (!rows.every((row) => row.length === nextCols && /^[01]+$/.test(row))) {
     throw new Error("Rows may only contain 0 and 1 values.");
   }
 
   return {
     nextName,
-    nextSize,
+    nextRows,
+    nextCols,
     nextPixels: rows.map((row) => [...row].map(Number)),
   };
 }
@@ -201,8 +213,9 @@ function createStorageSnapshot(id = createId()) {
   return {
     id,
     name: getCreationName(),
-    size,
-    pixels,
+    rows,
+    cols,
+    pixels: pixels.map((row) => [...row]),
     updatedAt: new Date().toISOString(),
   };
 }
@@ -210,9 +223,10 @@ function createStorageSnapshot(id = createId()) {
 function loadCreation(creation) {
   activeCreationId = null;
   nameInput.value = creation.name || "Untitled";
-  size = creation.size;
+  rows = creation.rows || creation.size;
+  cols = creation.cols || creation.size;
   pixels = creation.pixels.map((row) => [...row]);
-  sizeInput.value = String(size);
+  sizeInput.value = String(Math.max(rows, cols));
   renderBoard();
   setStatus("Loaded");
 }
@@ -230,7 +244,10 @@ function deleteCreation(id) {
 function createThumbnail(creation) {
   const thumbnail = document.createElement("div");
   thumbnail.className = "thumbnail";
-  thumbnail.style.gridTemplateColumns = `repeat(${creation.size}, 1fr)`;
+  const thumbnailCols = creation.cols || creation.size;
+  const thumbnailRows = creation.rows || creation.size;
+  thumbnail.style.gridTemplateColumns = `repeat(${thumbnailCols}, 1fr)`;
+  thumbnail.style.aspectRatio = `${thumbnailCols} / ${thumbnailRows}`;
   thumbnail.setAttribute("aria-hidden", "true");
 
   for (const row of creation.pixels) {
@@ -309,7 +326,43 @@ function createExportFilename() {
     .replaceAll(":", "")
     .replace(/\.\d{3}Z$/, "Z");
 
-  return `${name}-${size}x${size}-${timestamp}.invader`;
+  return `${name}-${cols}x${rows}-${timestamp}.invader`;
+}
+
+function addEdge(edge) {
+  if ((edge === "top" || edge === "bottom") && rows >= 64) {
+    setStatus("Maximum height is 64");
+    return;
+  }
+
+  if ((edge === "left" || edge === "right") && cols >= 64) {
+    setStatus("Maximum width is 64");
+    return;
+  }
+
+  if (edge === "top") {
+    pixels.unshift(Array(cols).fill(0));
+    rows += 1;
+  }
+
+  if (edge === "bottom") {
+    pixels.push(Array(cols).fill(0));
+    rows += 1;
+  }
+
+  if (edge === "left") {
+    pixels = pixels.map((row) => [0, ...row]);
+    cols += 1;
+  }
+
+  if (edge === "right") {
+    pixels = pixels.map((row) => [...row, 0]);
+    cols += 1;
+  }
+
+  activeCreationId = null;
+  sizeInput.value = String(Math.max(rows, cols));
+  renderBoard();
 }
 
 board.addEventListener("pointerdown", (event) => {
@@ -349,7 +402,7 @@ board.addEventListener("pointercancel", () => {
 });
 
 clearButton.addEventListener("click", () => {
-  pixels = createGrid(size);
+  pixels = createGrid(rows, cols);
   activeCreationId = null;
   syncCells();
 });
@@ -375,9 +428,10 @@ importButton.addEventListener("click", () => {
     const parsed = parseExport(exportText.value);
     activeCreationId = null;
     nameInput.value = parsed.nextName;
-    size = parsed.nextSize;
+    rows = parsed.nextRows;
+    cols = parsed.nextCols;
     pixels = parsed.nextPixels;
-    sizeInput.value = String(size);
+    sizeInput.value = String(Math.max(rows, cols));
     renderBoard();
     setStatus("Imported");
   } catch (error) {
@@ -400,20 +454,22 @@ resizeButton.addEventListener("click", () => {
 
   if (!Number.isInteger(nextSize) || nextSize < 2 || nextSize > 64) {
     setStatus("Use a size from 2 to 64");
-    sizeInput.value = String(size);
+    sizeInput.value = String(Math.max(rows, cols));
     return;
   }
 
-  const nextPixels = createGrid(nextSize);
-  const limit = Math.min(size, nextSize);
+  const nextPixels = createGrid(nextSize, nextSize);
+  const rowLimit = Math.min(rows, nextSize);
+  const colLimit = Math.min(cols, nextSize);
 
-  for (let row = 0; row < limit; row += 1) {
-    for (let col = 0; col < limit; col += 1) {
+  for (let row = 0; row < rowLimit; row += 1) {
+    for (let col = 0; col < colLimit; col += 1) {
       nextPixels[row][col] = pixels[row][col];
     }
   }
 
-  size = nextSize;
+  rows = nextSize;
+  cols = nextSize;
   pixels = nextPixels;
   activeCreationId = null;
   renderBoard();
@@ -422,6 +478,9 @@ resizeButton.addEventListener("click", () => {
 nameInput.addEventListener("input", syncExport);
 mirrorInput.addEventListener("change", syncMirrorLine);
 saveButton.addEventListener("click", saveCurrentCreation);
+edgeAddButtons.forEach((button) => {
+  button.addEventListener("click", () => addEdge(button.dataset.addEdge));
+});
 
 renderBoard();
 renderGallery();

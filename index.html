@@ -54,7 +54,13 @@
           </div>
 
           <div class="board-wrap">
-            <div id="board" class="board" role="grid" aria-label="Drawing canvas"></div>
+            <div class="board-frame" aria-label="Canvas expansion controls">
+              <button class="edge-add edge-add-top" type="button" data-add-edge="top" aria-label="Add row to top">+</button>
+              <button class="edge-add edge-add-right" type="button" data-add-edge="right" aria-label="Add column to right">+</button>
+              <div id="board" class="board" role="grid" aria-label="Drawing canvas"></div>
+              <button class="edge-add edge-add-left" type="button" data-add-edge="left" aria-label="Add column to left">+</button>
+              <button class="edge-add edge-add-bottom" type="button" data-add-edge="bottom" aria-label="Add row to bottom">+</button>
+            </div>
           </div>
         </div>
       </section>
