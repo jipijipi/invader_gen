@@ -33,8 +33,18 @@ function getTool() {
   return document.querySelector('input[name="tool"]:checked').value;
 }
 
+function getPaintValue(tool, shiftKey) {
+  const toolValue = tool === "erase" ? 0 : 1;
+  return shiftKey && tool !== "toggle" ? Number(!toolValue) : toolValue;
+}
+
 function isMirrorEnabled() {
   return mirrorInput.checked;
+}
+
+function syncMirrorLine() {
+  board.classList.toggle("mirror-on", isMirrorEnabled());
+  board.classList.toggle("even-size", size % 2 === 0);
 }
 
 function getCreationName() {
@@ -61,14 +71,8 @@ function renderBoard() {
       cell.className = "cell";
       cell.dataset.row = String(row);
       cell.dataset.col = String(col);
-      if (size % 2 === 0 && col === size / 2 - 1) {
-        cell.classList.add("mirror-left");
-      }
-      if (size % 2 === 0 && col === size / 2) {
-        cell.classList.add("mirror-right");
-      }
       if (size % 2 === 1 && col === Math.floor(size / 2)) {
-        cell.classList.add("mirror-center");
+        cell.classList.add("mirror-center-column");
       }
       cell.setAttribute("role", "gridcell");
       cell.setAttribute("aria-label", `Pixel ${col + 1}, ${row + 1}`);
@@ -76,6 +80,7 @@ function renderBoard() {
     }
   }
 
+  syncMirrorLine();
   syncCells();
 }
 
@@ -319,7 +324,7 @@ board.addEventListener("pointerdown", (event) => {
   board.setPointerCapture(event.pointerId);
   isDrawing = true;
   lastTouchedIndex = -1;
-  dragValue = tool === "erase" ? 0 : 1;
+  dragValue = getPaintValue(tool, event.shiftKey);
   paintCell(cell, tool);
 });
 
@@ -329,6 +334,7 @@ board.addEventListener("pointermove", (event) => {
   }
 
   event.preventDefault();
+  dragValue = getPaintValue(getTool(), event.shiftKey);
   paintCell(getCellFromEvent(event));
 });
 
@@ -414,6 +420,7 @@ resizeButton.addEventListener("click", () => {
 });
 
 nameInput.addEventListener("input", syncExport);
+mirrorInput.addEventListener("change", syncMirrorLine);
 saveButton.addEventListener("click", saveCurrentCreation);
 
 renderBoard();
