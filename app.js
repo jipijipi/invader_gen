@@ -11,6 +11,7 @@ const copyButton = document.querySelector("#copyButton");
 const importButton = document.querySelector("#importButton");
 const downloadButton = document.querySelector("#downloadButton");
 const resizeButton = document.querySelector("#resizeButton");
+const mirrorInput = document.querySelector("#mirrorInput");
 
 let size = DEFAULT_SIZE;
 let pixels = createGrid(size);
@@ -24,6 +25,10 @@ function createGrid(nextSize) {
 
 function getTool() {
   return document.querySelector('input[name="tool"]:checked').value;
+}
+
+function isMirrorEnabled() {
+  return mirrorInput.checked;
 }
 
 function setStatus(message) {
@@ -89,10 +94,11 @@ function paintCell(cell, mode = getTool()) {
     return;
   }
 
-  if (mode === "toggle") {
-    pixels[row][col] = pixels[row][col] ? 0 : 1;
-  } else {
-    pixels[row][col] = dragValue;
+  const nextValue = mode === "toggle" ? (pixels[row][col] ? 0 : 1) : dragValue;
+  pixels[row][col] = nextValue;
+
+  if (isMirrorEnabled()) {
+    pixels[row][size - col - 1] = nextValue;
   }
 
   lastTouchedIndex = index;
