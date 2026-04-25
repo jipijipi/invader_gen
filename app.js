@@ -17,7 +17,7 @@ const mirrorInput = document.querySelector("#mirrorInput");
 const saveButton = document.querySelector("#saveButton");
 const gallery = document.querySelector("#gallery");
 const galleryCount = document.querySelector("#galleryCount");
-const edgeAddButtons = document.querySelectorAll("[data-add-edge]");
+const edgeButtons = document.querySelectorAll("[data-edge]");
 
 let rows = DEFAULT_SIZE;
 let cols = DEFAULT_SIZE;
@@ -365,6 +365,51 @@ function addEdge(edge) {
   renderBoard();
 }
 
+function removeEdge(edge) {
+  if ((edge === "top" || edge === "bottom") && rows <= 2) {
+    setStatus("Minimum height is 2");
+    return;
+  }
+
+  if ((edge === "left" || edge === "right") && cols <= 2) {
+    setStatus("Minimum width is 2");
+    return;
+  }
+
+  if (edge === "top") {
+    pixels.shift();
+    rows -= 1;
+  }
+
+  if (edge === "bottom") {
+    pixels.pop();
+    rows -= 1;
+  }
+
+  if (edge === "left") {
+    pixels = pixels.map((row) => row.slice(1));
+    cols -= 1;
+  }
+
+  if (edge === "right") {
+    pixels = pixels.map((row) => row.slice(0, -1));
+    cols -= 1;
+  }
+
+  activeCreationId = null;
+  sizeInput.value = String(Math.max(rows, cols));
+  renderBoard();
+}
+
+function updateEdge(edge, action) {
+  if (action === "remove") {
+    removeEdge(edge);
+    return;
+  }
+
+  addEdge(edge);
+}
+
 board.addEventListener("pointerdown", (event) => {
   const cell = getCellFromEvent(event);
   const tool = getTool();
@@ -478,8 +523,8 @@ resizeButton.addEventListener("click", () => {
 nameInput.addEventListener("input", syncExport);
 mirrorInput.addEventListener("change", syncMirrorLine);
 saveButton.addEventListener("click", saveCurrentCreation);
-edgeAddButtons.forEach((button) => {
-  button.addEventListener("click", () => addEdge(button.dataset.addEdge));
+edgeButtons.forEach((button) => {
+  button.addEventListener("click", () => updateEdge(button.dataset.edge, button.dataset.edgeAction));
 });
 
 renderBoard();

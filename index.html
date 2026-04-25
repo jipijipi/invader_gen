@@ -55,11 +55,23 @@
 
           <div class="board-wrap">
             <div class="board-frame" aria-label="Canvas expansion controls">
-              <button class="edge-add edge-add-top" type="button" data-add-edge="top" aria-label="Add row to top">+</button>
-              <button class="edge-add edge-add-right" type="button" data-add-edge="right" aria-label="Add column to right">+</button>
+              <div class="edge-controls edge-top">
+                <button class="edge-button" type="button" data-edge-action="add" data-edge="top" aria-label="Add row to top">+</button>
+                <button class="edge-button" type="button" data-edge-action="remove" data-edge="top" aria-label="Remove row from top">-</button>
+              </div>
+              <div class="edge-controls edge-right">
+                <button class="edge-button" type="button" data-edge-action="add" data-edge="right" aria-label="Add column to right">+</button>
+                <button class="edge-button" type="button" data-edge-action="remove" data-edge="right" aria-label="Remove column from right">-</button>
+              </div>
               <div id="board" class="board" role="grid" aria-label="Drawing canvas"></div>
-              <button class="edge-add edge-add-left" type="button" data-add-edge="left" aria-label="Add column to left">+</button>
-              <button class="edge-add edge-add-bottom" type="button" data-add-edge="bottom" aria-label="Add row to bottom">+</button>
+              <div class="edge-controls edge-left">
+                <button class="edge-button" type="button" data-edge-action="add" data-edge="left" aria-label="Add column to left">+</button>
+                <button class="edge-button" type="button" data-edge-action="remove" data-edge="left" aria-label="Remove column from left">-</button>
+              </div>
+              <div class="edge-controls edge-bottom">
+                <button class="edge-button" type="button" data-edge-action="add" data-edge="bottom" aria-label="Add row to bottom">+</button>
+                <button class="edge-button" type="button" data-edge-action="remove" data-edge="bottom" aria-label="Remove row from bottom">-</button>
+              </div>
             </div>
           </div>
         </div>
