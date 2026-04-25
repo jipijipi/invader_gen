@@ -97,11 +97,17 @@
           </div>
           <textarea id="exportText" spellcheck="false" aria-label="Exported pixel data"></textarea>
           <div class="import-row">
-            <button id="copyButton" type="button">Copy Text</button>
-            <button id="importButton" type="button">Import Text</button>
-            <button id="downloadButton" type="button">Download .invader</button>
-            <button id="pngButton" type="button">Download PNG</button>
-            <button id="svgButton" type="button">Download SVG</button>
+            <div class="export-group" aria-label="Source format actions">
+              <span>Source</span>
+              <button id="copyButton" type="button">Copy Text</button>
+              <button id="importButton" type="button">Import Text</button>
+              <button id="downloadButton" type="button">Download .invader</button>
+            </div>
+            <div class="export-group" aria-label="Image export actions">
+              <span>Image</span>
+              <button id="pngButton" type="button">Download PNG</button>
+              <button id="svgButton" type="button">Download SVG</button>
+            </div>
           </div>
         </section>
       </aside>
