@@ -142,6 +142,15 @@ function parseExport(text) {
   };
 }
 
+function createExportFilename() {
+  const timestamp = new Date()
+    .toISOString()
+    .replaceAll(":", "")
+    .replace(/\.\d{3}Z$/, "Z");
+
+  return `invader-${size}x${size}-${timestamp}.invader`;
+}
+
 board.addEventListener("pointerdown", (event) => {
   const cell = getCellFromEvent(event);
   const tool = getTool();
@@ -216,7 +225,7 @@ downloadButton.addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `invader-${size}x${size}.invader`;
+  link.download = createExportFilename();
   link.click();
   URL.revokeObjectURL(url);
 });
