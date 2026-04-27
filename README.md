@@ -38,6 +38,19 @@ kill "$(cat server.pid)"
 rm server.pid
 ```
 
+If you lose the terminal that started the server, find the process listening on
+port `4173`:
+
+```sh
+lsof -nP -iTCP:4173 -sTCP:LISTEN
+```
+
+Then stop it with the PID from the `PID` column:
+
+```sh
+kill <PID>
+```
+
 ## Saving and loading
 
 Use the name field in the toolbar to name the current creation. `Save` stores it
