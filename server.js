@@ -6,7 +6,8 @@ const HOST = "127.0.0.1";
 const PORT = Number(process.env.PORT || 4173);
 const ROOT = __dirname;
 const MAX_BODY_SIZE = 1024 * 1024;
-const INDEX_KEY = "invader:designs";
+const DESIGNS_KEY = "invader:designs";
+const LEGACY_DESIGN_KEY_PREFIX = "invader:design:";
 
 const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",
@@ -157,12 +158,12 @@ function validateDesign(input) {
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     id: input.id.trim(),
     name: typeof input.name === "string" && input.name.trim() ? input.name.trim().slice(0, 60) : "Untitled",
     rows,
     cols,
-    pixels: input.pixels.map((row) => [...row]),
+    data: input.pixels.map((row) => row.join("")),
     updatedAt: new Date(updatedAt).toISOString(),
     uploadedAt: new Date().toISOString(),
     format: "INVADER1",
@@ -185,6 +186,87 @@ function validateUploadPayload(payload) {
   return payload.designs.map(validateDesign);
 }
 
+function createPipelineRequest(config, commands) {
+  return fetch(`${config.restUrl.replace(/\/+$/, "")}/pipeline`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${config.token}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(commands),
+  });
+}
+
+async function runPipeline(config, commands) {
+  const redisResponse = await createPipelineRequest(config, commands);
+  const result = await redisResponse.json().catch(() => null);
+
+  if (!redisResponse.ok) {
+    throw new Error(result?.error || `Upstash returned HTTP ${redisResponse.status}.`);
+  }
+
+  if (!Array.isArray(result)) {
+    throw new Error("Unexpected Upstash response.");
+  }
+
+  const failures = result.filter((item) => item?.error).map((item) => item.error);
+
+  if (failures.length > 0) {
+    throw new Error(failures.join(" "));
+  }
+
+  return result;
+}
+
+function convertLegacyDesign(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return validateDesign(parsed);
+  } catch {
+    return null;
+  }
+}
+
+async function migrateLegacyStorageIfNeeded(config) {
+  const typeResult = await runPipeline(config, [["TYPE", DESIGNS_KEY]]);
+  const keyType = typeResult[0]?.result;
+
+  if (keyType === "none" || keyType === "hash") {
+    return;
+  }
+
+  if (keyType !== "zset") {
+    throw new Error(`Redis key ${DESIGNS_KEY} is a ${keyType}, not a hash.`);
+  }
+
+  const idsResult = await runPipeline(config, [["ZRANGE", DESIGNS_KEY, 0, -1]]);
+  const ids = idsResult[0]?.result;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    await runPipeline(config, [["DEL", DESIGNS_KEY]]);
+    return;
+  }
+
+  const legacyValues = await runPipeline(
+    config,
+    ids.map((id) => ["GET", `${LEGACY_DESIGN_KEY_PREFIX}${id}`]),
+  );
+  const migratedDesigns = legacyValues
+    .map((item) => convertLegacyDesign(item.result))
+    .filter(Boolean);
+  const commands = [["DEL", DESIGNS_KEY]];
+
+  for (const design of migratedDesigns) {
+    commands.push(["HSET", DESIGNS_KEY, design.id, JSON.stringify(design)]);
+  }
+
+  await runPipeline(config, commands);
+}
+
 async function uploadDesigns(request, response) {
   const config = getUpstashConfig();
 
@@ -202,36 +284,11 @@ async function uploadDesigns(request, response) {
     return;
   }
 
-  const commands = designs.flatMap((design) => [
-    ["SET", `invader:design:${design.id}`, JSON.stringify(design)],
-    ["ZADD", INDEX_KEY, Date.parse(design.updatedAt), design.id],
-  ]);
+  const commands = designs.map((design) => ["HSET", DESIGNS_KEY, design.id, JSON.stringify(design)]);
 
   try {
-    const redisResponse = await fetch(`${config.restUrl.replace(/\/+$/, "")}/pipeline`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${config.token}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(commands),
-    });
-    const result = await redisResponse.json().catch(() => null);
-
-    if (!redisResponse.ok) {
-      sendJson(response, 502, { error: result?.error || `Upstash returned HTTP ${redisResponse.status}.` });
-      return;
-    }
-
-    const failures = Array.isArray(result)
-      ? result.filter((item) => item?.error).map((item) => item.error)
-      : ["Unexpected Upstash response."];
-
-    if (failures.length > 0) {
-      sendJson(response, 502, { error: failures.join(" ") });
-      return;
-    }
-
+    await migrateLegacyStorageIfNeeded(config);
+    await runPipeline(config, commands);
     sendJson(response, 200, { uploaded: designs.length, ids: designs.map((design) => design.id) });
   } catch (error) {
     sendJson(response, 502, { error: `Redis upload failed: ${error.message}` });

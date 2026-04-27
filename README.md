@@ -25,8 +25,10 @@ items from local storage.
 
 When running through `server.js`, use the gallery checkboxes and `Upload
 selected` to archive selected saved creations in Upstash Redis. Uploads are
-idempotent by design: each creation is stored at `invader:design:{id}` and
-indexed in `invader:designs`.
+idempotent by design: each creation is stored as a field in the `invader:designs`
+hash. Use `HRANDFIELD invader:designs 1 WITHVALUES` to pull one random design for
+display. If the old per-design key/index layout exists, the first upload migrates
+the old index into this hash.
 
 ## Export format
 
