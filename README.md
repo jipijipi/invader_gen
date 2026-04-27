@@ -14,6 +14,30 @@ node server.js
 Open `http://127.0.0.1:4173`. The local server keeps the Redis token out of the
 browser and exposes only the upload endpoint needed by the gallery.
 
+## Starting and stopping the server
+
+Start the local server from the project directory:
+
+```sh
+node server.js
+```
+
+Leave that terminal open while using the app. Stop the server with `Ctrl+C`.
+
+To run it in the background:
+
+```sh
+node server.js &
+echo $! > server.pid
+```
+
+Stop the background server with:
+
+```sh
+kill "$(cat server.pid)"
+rm server.pid
+```
+
 ## Saving and loading
 
 Use the name field in the toolbar to name the current creation. `Save` stores it
