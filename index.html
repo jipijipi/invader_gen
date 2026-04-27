@@ -65,13 +65,19 @@
             <div class="tool-actions" aria-label="Canvas actions">
               <label class="toggle-button">
                 <input id="mirrorInput" type="checkbox">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 4v16"/>
+                  <path d="M8 7H4v10h4z"/>
+                  <path d="M16 7h4v10h-4z"/>
+                </svg>
                 <span>Mirror</span>
               </label>
-              <button id="invertButton" class="icon-button" type="button" aria-label="Invert pixels" title="Invert pixels">
+              <button id="invertButton" class="icon-button labeled-icon-button" type="button" aria-label="Invert pixels" title="Invert pixels">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                   <path d="M12 3a9 9 0 0 0 0 18z"/>
                   <path d="M12 3a9 9 0 0 1 0 18"/>
                 </svg>
+                <span>Invert</span>
               </button>
             </div>
 
