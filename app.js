@@ -18,6 +18,7 @@ const resizeButton = document.querySelector("#resizeButton");
 const mirrorInput = document.querySelector("#mirrorInput");
 const saveButton = document.querySelector("#saveButton");
 const uploadButton = document.querySelector("#uploadButton");
+const deleteSelectedButton = document.querySelector("#deleteSelectedButton");
 const gallery = document.querySelector("#gallery");
 const galleryCount = document.querySelector("#galleryCount");
 const selectedCount = document.querySelector("#selectedCount");
@@ -210,6 +211,7 @@ function updateUploadControls() {
   const count = selectedCreationIds.size;
   selectedCount.textContent = count === 1 ? "1 selected" : `${count} selected`;
   uploadButton.disabled = count === 0;
+  deleteSelectedButton.disabled = count === 0;
 }
 
 function createId() {
@@ -242,15 +244,21 @@ function loadCreation(creation) {
   setStatus("Loaded");
 }
 
-function deleteCreation(id) {
-  const creations = getSavedCreations().filter((creation) => creation.id !== id);
+function deleteSelectedCreations() {
+  if (selectedCreationIds.size === 0) {
+    setStatus("Select designs first");
+    return;
+  }
+
+  const deletedCount = selectedCreationIds.size;
+  const creations = getSavedCreations().filter((creation) => !selectedCreationIds.has(creation.id));
   setSavedCreations(creations);
-  selectedCreationIds.delete(id);
-  if (activeCreationId === id) {
+  if (selectedCreationIds.has(activeCreationId)) {
     activeCreationId = null;
   }
+  selectedCreationIds.clear();
   renderGallery();
-  setStatus("Deleted");
+  setStatus(deletedCount === 1 ? "Deleted 1 design" : `Deleted ${deletedCount} designs`);
 }
 
 function createThumbnail(creation) {
@@ -325,13 +333,7 @@ function renderGallery() {
     loadButton.append(label);
     loadButton.addEventListener("click", () => loadCreation(creation));
 
-    const deleteButton = document.createElement("button");
-    deleteButton.type = "button";
-    deleteButton.className = "delete-button";
-    deleteButton.textContent = "Delete";
-    deleteButton.addEventListener("click", () => deleteCreation(creation.id));
-
-    item.append(selectLabel, loadButton, deleteButton);
+    item.append(selectLabel, loadButton);
     gallery.append(item);
   }
 
@@ -688,6 +690,7 @@ nameInput.addEventListener("input", syncExport);
 mirrorInput.addEventListener("change", syncMirrorLine);
 saveButton.addEventListener("click", saveCurrentCreation);
 uploadButton.addEventListener("click", uploadSelectedCreations);
+deleteSelectedButton.addEventListener("click", deleteSelectedCreations);
 edgeButtons.forEach((button) => {
   button.addEventListener("click", () => updateEdge(button.dataset.edge, button.dataset.edgeAction));
 });

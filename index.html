@@ -15,7 +15,15 @@
             <p>13 x 13 one-bit pixel editor</p>
           </div>
           <div class="actions" aria-label="Editor actions">
-            <button id="clearButton" type="button">Clear</button>
+            <button id="clearButton" class="icon-button" type="button" aria-label="Clear canvas" title="Clear canvas">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M3 6h18"/>
+                <path d="M8 6V4h8v2"/>
+                <path d="M6 6l1 15h10l1-15"/>
+                <path d="M10 11v6"/>
+                <path d="M14 11v6"/>
+              </svg>
+            </button>
           </div>
         </header>
 
@@ -42,14 +50,26 @@
                 <input id="mirrorInput" type="checkbox">
                 <span>Mirror</span>
               </label>
-              <button id="invertButton" type="button">Invert</button>
+              <button id="invertButton" class="icon-button" type="button" aria-label="Invert pixels" title="Invert pixels">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 3a9 9 0 0 0 0 18z"/>
+                  <path d="M12 3a9 9 0 0 1 0 18"/>
+                </svg>
+              </button>
             </div>
 
             <fieldset>
               <legend>Canvas</legend>
               <label for="sizeInput">Size</label>
               <input id="sizeInput" type="number" min="2" max="64" value="13">
-              <button id="resizeButton" type="button">Resize</button>
+              <button id="resizeButton" class="icon-button" type="button" aria-label="Resize canvas" title="Resize canvas">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M4 9V4h5"/>
+                  <path d="M20 15v5h-5"/>
+                  <path d="M4 4l6 6"/>
+                  <path d="M20 20l-6-6"/>
+                </svg>
+              </button>
             </fieldset>
           </div>
 
@@ -85,10 +105,33 @@
           </div>
           <div class="save-row">
             <input id="nameInput" type="text" maxlength="60" value="Untitled" aria-label="Creation name">
-            <button id="saveButton" type="button">Save</button>
+            <button id="saveButton" class="icon-button" type="button" aria-label="Save creation" title="Save creation">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M5 3h12l2 2v16H5z"/>
+                <path d="M8 3v6h8V3"/>
+                <path d="M8 21v-7h8v7"/>
+              </svg>
+            </button>
           </div>
           <div class="upload-row" aria-label="Redis upload actions">
-            <button id="uploadButton" type="button" disabled>Upload selected</button>
+            <div class="selected-actions">
+              <button id="uploadButton" class="icon-button" type="button" disabled aria-label="Upload selected" title="Upload selected">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 3v12"/>
+                  <path d="M7 8l5-5 5 5"/>
+                  <path d="M5 15v5h14v-5"/>
+                </svg>
+              </button>
+              <button id="deleteSelectedButton" class="icon-button" type="button" disabled aria-label="Delete selected" title="Delete selected">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M3 6h18"/>
+                  <path d="M8 6V4h8v2"/>
+                  <path d="M6 6l1 15h10l1-15"/>
+                  <path d="M10 11v6"/>
+                  <path d="M14 11v6"/>
+                </svg>
+              </button>
+            </div>
             <span id="selectedCount">0 selected</span>
           </div>
           <div id="gallery" class="gallery"></div>
@@ -103,14 +146,51 @@
           <div class="import-row">
             <div class="export-group" aria-label="Source format actions">
               <span>Source</span>
-              <button id="copyButton" type="button">Copy Text</button>
-              <button id="importButton" type="button">Import Text</button>
-              <button id="downloadButton" type="button">Download .invader</button>
+              <div class="icon-row">
+                <button id="copyButton" class="icon-button" type="button" aria-label="Copy text" title="Copy text">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M9 9h10v12H9z"/>
+                    <path d="M5 15H4V3h12v1"/>
+                  </svg>
+                </button>
+                <button id="importButton" class="icon-button" type="button" aria-label="Import text" title="Import text">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 21V9"/>
+                    <path d="M7 14l5-5 5 5"/>
+                    <path d="M5 3h14"/>
+                  </svg>
+                </button>
+                <button id="downloadButton" class="icon-button" type="button" aria-label="Download .invader" title="Download .invader">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 3v12"/>
+                    <path d="M7 10l5 5 5-5"/>
+                    <path d="M5 21h14"/>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="export-group" aria-label="Image export actions">
               <span>Image</span>
-              <button id="pngButton" type="button">Download PNG</button>
-              <button id="svgButton" type="button">Download SVG</button>
+              <div class="icon-row">
+                <button id="pngButton" class="icon-button labeled-icon-button" type="button" aria-label="Download PNG" title="Download PNG">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M5 3h14v18H5z"/>
+                    <path d="M8 8h8"/>
+                    <path d="M8 12h8"/>
+                    <path d="M8 16h5"/>
+                  </svg>
+                  <span>PNG</span>
+                </button>
+                <button id="svgButton" class="icon-button labeled-icon-button" type="button" aria-label="Download SVG" title="Download SVG">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M5 3h14v18H5z"/>
+                    <path d="M9 9l-3 3 3 3"/>
+                    <path d="M15 9l3 3-3 3"/>
+                    <path d="M13 8l-2 8"/>
+                  </svg>
+                  <span>SVG</span>
+                </button>
+              </div>
             </div>
           </div>
         </section>

@@ -45,6 +45,11 @@ button:hover {
   border-color: var(--accent);
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible {
@@ -125,6 +130,45 @@ label,
 .upload-row {
   align-items: center;
   justify-content: space-between;
+}
+
+.selected-actions,
+.icon-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  min-width: 2.4rem;
+  padding: 0;
+}
+
+.icon-button svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.labeled-icon-button {
+  gap: 0.35rem;
+  width: auto;
+  min-width: 4.4rem;
+  padding: 0 0.6rem;
+}
+
+.labeled-icon-button span {
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 #selectedCount {
@@ -405,7 +449,7 @@ textarea {
 
 .gallery-item {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 0.5rem;
   align-items: stretch;
 }
@@ -456,10 +500,6 @@ textarea {
 
 .thumbnail .is-on {
   background: var(--ink);
-}
-
-.delete-button {
-  padding: 0 0.65rem;
 }
 
 .empty-gallery {
