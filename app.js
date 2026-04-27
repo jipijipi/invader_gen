@@ -17,8 +17,10 @@ const svgButton = document.querySelector("#svgButton");
 const resizeButton = document.querySelector("#resizeButton");
 const mirrorInput = document.querySelector("#mirrorInput");
 const saveButton = document.querySelector("#saveButton");
+const uploadButton = document.querySelector("#uploadButton");
 const gallery = document.querySelector("#gallery");
 const galleryCount = document.querySelector("#galleryCount");
+const selectedCount = document.querySelector("#selectedCount");
 const edgeButtons = document.querySelectorAll("[data-edge]");
 
 let rows = DEFAULT_SIZE;
@@ -28,6 +30,7 @@ let isDrawing = false;
 let dragValue = 1;
 let lastTouchedIndex = -1;
 let activeCreationId = null;
+const selectedCreationIds = new Set();
 
 function createGrid(rowCount, colCount) {
   return Array.from({ length: rowCount }, () => Array(colCount).fill(0));
@@ -203,6 +206,12 @@ function setSavedCreations(creations) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(creations));
 }
 
+function updateUploadControls() {
+  const count = selectedCreationIds.size;
+  selectedCount.textContent = count === 1 ? "1 selected" : `${count} selected`;
+  uploadButton.disabled = count === 0;
+}
+
 function createId() {
   if (globalThis.crypto?.randomUUID) {
     return globalThis.crypto.randomUUID();
@@ -236,6 +245,7 @@ function loadCreation(creation) {
 function deleteCreation(id) {
   const creations = getSavedCreations().filter((creation) => creation.id !== id);
   setSavedCreations(creations);
+  selectedCreationIds.delete(id);
   if (activeCreationId === id) {
     activeCreationId = null;
   }
@@ -265,6 +275,12 @@ function createThumbnail(creation) {
 
 function renderGallery() {
   const creations = getSavedCreations().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const savedIds = new Set(creations.map((creation) => creation.id));
+  for (const id of selectedCreationIds) {
+    if (!savedIds.has(id)) {
+      selectedCreationIds.delete(id);
+    }
+  }
   gallery.replaceChildren();
   galleryCount.textContent = creations.length ? `${creations.length} saved` : "Empty";
 
@@ -273,12 +289,31 @@ function renderGallery() {
     empty.className = "empty-gallery";
     empty.textContent = "Saved creations appear here.";
     gallery.append(empty);
+    updateUploadControls();
     return;
   }
 
   for (const creation of creations) {
     const item = document.createElement("article");
     item.className = "gallery-item";
+
+    const selectLabel = document.createElement("label");
+    selectLabel.className = "gallery-select";
+
+    const selectInput = document.createElement("input");
+    selectInput.type = "checkbox";
+    selectInput.checked = selectedCreationIds.has(creation.id);
+    selectInput.setAttribute("aria-label", `Select ${creation.name || "Untitled"} for upload`);
+    selectInput.addEventListener("change", () => {
+      if (selectInput.checked) {
+        selectedCreationIds.add(creation.id);
+      } else {
+        selectedCreationIds.delete(creation.id);
+      }
+      updateUploadControls();
+    });
+
+    selectLabel.append(selectInput);
 
     const loadButton = document.createElement("button");
     loadButton.type = "button";
@@ -296,9 +331,11 @@ function renderGallery() {
     deleteButton.textContent = "Delete";
     deleteButton.addEventListener("click", () => deleteCreation(creation.id));
 
-    item.append(loadButton, deleteButton);
+    item.append(selectLabel, loadButton, deleteButton);
     gallery.append(item);
   }
+
+  updateUploadControls();
 }
 
 function saveCurrentCreation() {
@@ -316,6 +353,54 @@ function saveCurrentCreation() {
   setSavedCreations(creations);
   renderGallery();
   setStatus("Saved");
+}
+
+function normalizeSavedCreation(creation) {
+  return {
+    id: creation.id,
+    name: creation.name || "Untitled",
+    rows: creation.rows || creation.size,
+    cols: creation.cols || creation.size,
+    pixels: creation.pixels,
+    updatedAt: creation.updatedAt,
+  };
+}
+
+async function uploadSelectedCreations() {
+  const designs = getSavedCreations()
+    .filter((creation) => selectedCreationIds.has(creation.id))
+    .map(normalizeSavedCreation);
+
+  if (designs.length === 0) {
+    selectedCreationIds.clear();
+    renderGallery();
+    setStatus("Select designs first");
+    return;
+  }
+
+  uploadButton.disabled = true;
+  setStatus("Uploading...");
+
+  try {
+    const response = await fetch("/api/upload-designs", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ designs }),
+    });
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(result.error || "Upload failed");
+    }
+
+    setStatus(result.uploaded === 1 ? "Uploaded 1 design" : `Uploaded ${result.uploaded} designs`);
+  } catch (error) {
+    setStatus(error.message);
+  } finally {
+    updateUploadControls();
+  }
 }
 
 function getFilenameBase() {
@@ -602,6 +687,7 @@ resizeButton.addEventListener("click", () => {
 nameInput.addEventListener("input", syncExport);
 mirrorInput.addEventListener("change", syncMirrorLine);
 saveButton.addEventListener("click", saveCurrentCreation);
+uploadButton.addEventListener("click", uploadSelectedCreations);
 edgeButtons.forEach((button) => {
   button.addEventListener("click", () => updateEdge(button.dataset.edge, button.dataset.edgeAction));
 });

@@ -4,6 +4,16 @@ A dependency-free static web app for drawing 1-bit invader and pixel art.
 
 Open `index.html` in a browser to use it.
 
+To enable private Upstash Redis uploads, add `.env` with `UPSTASH_HOST` and
+`UPSTASH_TOKEN`, then run:
+
+```sh
+node server.js
+```
+
+Open `http://127.0.0.1:4173`. The local server keeps the Redis token out of the
+browser and exposes only the upload endpoint needed by the gallery.
+
 ## Saving and loading
 
 Use the name field in the toolbar to name the current creation. `Save` stores it
@@ -12,6 +22,11 @@ editor. Saving repeatedly while working on a new creation overwrites that same
 gallery item. Loading from the gallery creates a fresh working copy, so saving it
 again creates a new gallery item for variations. Use `Delete` to remove saved
 items from local storage.
+
+When running through `server.js`, use the gallery checkboxes and `Upload
+selected` to archive selected saved creations in Upstash Redis. Uploads are
+idempotent by design: each creation is stored at `invader:design:{id}` and
+indexed in `invader:designs`.
 
 ## Export format
 
